@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Alert } from 'react-native';
 
 import { Header } from '../components/Header';
 import { Task, TasksList } from '../components/TasksList';
@@ -9,15 +9,40 @@ export function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   function handleAddTask(newTaskTitle: string) {
-    const newTask: Task = {
-      id: new Date().getTime(),
-      title: newTaskTitle,
-      done:false
-    };
-    const newTasks:Task[] = [...tasks, newTask];
-    console.log('newTasks', newTasks);
-    setTasks(newTasks)
+    let newTask: Task | undefined  = tasks.find((task)=>newTaskTitle === task.title);
+    if(newTask){
+      Alert.alert(
+        "Task já cadastrada",
+        "Você não pode cadastrar uma task com o mesmo nome.",
+        [
+          { text: "OK", onPress: () => {}}
+        ]
+      );
+    }else{
+       newTask = {
+        id: new Date().getTime(),
+        title: newTaskTitle,
+        done:false
+      };
+      const newTasks:Task[] = [...tasks, newTask];
+      console.log('newTasks', newTasks);
+      setTasks(newTasks)
+    }
+
   }
+
+  function handleEditTask(id: number, newTaskTitle: string) {
+    const newTasks: Task[] = [];
+    tasks.forEach((task) => {
+      if(id === task.id){
+        task.title = newTaskTitle;
+      }
+      newTasks.push(task);
+    });
+    setTasks(newTasks); 
+
+  }
+  
 
   function handleToggleTaskDone(id: number) {
     const newTasks: Task[] = [];
@@ -31,8 +56,24 @@ export function Home() {
   }
 
   function handleRemoveTask(id: number) {
-    const newTasks: Task[] = tasks.filter((task)=>id !== task.id);
-    setTasks(newTasks); 
+    Alert.alert(
+      "Remover Item",
+      "Tem certeza que você deseja remover esse item?",
+      [
+        {
+          text: "Não",
+          onPress: () => {},
+          style: "cancel"
+        },
+        { text: "Sim", 
+          onPress: () => {
+            const newTasks: Task[] = tasks.filter((task)=>id !== task.id);
+            setTasks(newTasks); 
+          } 
+        }
+      ]
+    );
+
   }
 
   return (
@@ -43,6 +84,8 @@ export function Home() {
         tasks={tasks} 
         toggleTaskDone={handleToggleTaskDone}
         removeTask={handleRemoveTask} 
+        editTask={handleEditTask}
+
       />
     </View>
   )
